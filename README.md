@@ -162,7 +162,7 @@ LLM analyzes intent → Needs to check availability first
    ↓
 Function call: check_availability(check_in="2025-12-15", check_out="2025-12-20", room_type="deluxe")
    ↓
-Your code calls checks availability
+Your code checks availability
    ↓
 Return available rooms to LLM
    ↓
@@ -172,7 +172,7 @@ User provides guest details
    ↓
 Function call: create_booking(...)
    ↓
-Your code calls creates a booking
+Your code creates a booking
    ↓
 LLM: "Great! Your booking #123 is confirmed for Dec 15-20 in our Deluxe Suite."
 ```
