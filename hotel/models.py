@@ -13,12 +13,17 @@ class RoomBase(BaseModel):
     capacity: int = Field(gt=0)
     description: Optional[str] = None
 
+    model_config = {
+        "use_enum_values": True
+    }
+
 
 class RoomResponse(RoomBase):
     id: int
 
     model_config = {
         "from_attributes": True,
+        "use_enum_values": True,
         "json_schema_extra": {
             "examples": [
                 {
@@ -133,6 +138,7 @@ class BookingResponse(BaseModel):
 
     model_config = {
         "from_attributes": True,
+        "use_enum_values": True,
         "json_schema_extra": {
             "examples": [
                 {
@@ -194,10 +200,11 @@ class BookingDetailResponse(BookingResponse):
 class AvailabilityRequest(BaseModel):
     check_in: datetime = Field(..., description="Start date of the stay")
     check_out: datetime = Field(..., description="End date of the stay")
-    room_type: Optional[RoomType] = Field(None, description="Filter by room type (optional)")
+    room_type: Optional[RoomType] = Field(None, description="Filter by room type (single, double, suite, deluxe)")
     capacity: Optional[int] = Field(None, gt=0, description="Minimum capacity required (optional)")
 
     model_config = {
+        "use_enum_values": True,
         "json_schema_extra": {
             "examples": [
                 {
