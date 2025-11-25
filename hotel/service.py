@@ -39,7 +39,7 @@ class HotelService:
         """Check room availability for a given date range"""
         logger.info("Checking availability: %s to %s", request.check_in, request.check_out)
         logger.debug("Availability filters: type=%s, capacity=%s", request.room_type, request.capacity)
-        
+
         # Validate dates
         try:
             if request.check_in >= request.check_out:
@@ -75,7 +75,7 @@ class HotelService:
             booking_data.check_in,
             booking_data.check_out
         )
-        
+
         try:
             # Validate dates
             logger.debug("Validating booking dates")
@@ -149,7 +149,7 @@ class HotelService:
     def cancel_booking(self, booking_id: int) -> BookingDetailResponse:
         """Cancel a booking"""
         logger.info("Cancelling booking %s", booking_id)
-        
+
         try:
             booking = self.repository.get_booking_by_id(booking_id)
 
@@ -158,7 +158,7 @@ class HotelService:
                 raise ValueError(f"Booking with ID {booking_id} not found")
 
             logger.debug("Current booking status: %s", booking.status)
-            
+
             if booking.status == BookingStatus.CANCELLED:
                 logger.error("Booking %s is already cancelled", booking_id)
                 raise ValueError(f"Booking {booking_id} is already cancelled")

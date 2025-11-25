@@ -14,11 +14,43 @@ class RoomType(str, Enum):
     SUITE = "suite"
     DELUXE = "deluxe"
 
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self.value)
+
+    @classmethod
+    def _missing_(cls, value):
+        """Handle case-insensitive and flexible string conversion"""
+        if isinstance(value, str):
+            value = value.lower()
+            for member in cls:
+                if member.value == value:
+                    return member
+        return None
+
 
 class BookingStatus(str, Enum):
     CONFIRMED = "confirmed"
     CANCELLED = "cancelled"
     COMPLETED = "completed"
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self.value)
+
+    @classmethod
+    def _missing_(cls, value):
+        """Handle case-insensitive and flexible string conversion"""
+        if isinstance(value, str):
+            value = value.lower()
+            for member in cls:
+                if member.value == value:
+                    return member
+        return None
 
 
 class Room(Base):
