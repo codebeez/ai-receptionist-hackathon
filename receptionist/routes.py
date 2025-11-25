@@ -69,3 +69,5 @@ async def websocket_endpoint(
                 logger.error("Error closing websocket (client: %s): %s", client_id, close_error)
     except Exception as e:
         logger.error("Error accepting websocket connection (client: %s): %s", client_id, e, exc_info=True)
+
+    logger.info("Thread: %s", service.thread)
