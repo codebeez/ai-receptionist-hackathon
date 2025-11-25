@@ -1,0 +1,27 @@
+[project]
+name = "ai-receptionist-hackathon"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "dotenv>=0.9.9",
+    "fastapi>=0.121.3",
+    "openai>=2.8.1",
+    "pydantic>=2.12.4",
+    "sqlalchemy>=2.0.0",
+    "uvicorn[standard]>=0.30.0",
+]
+
+[tool.pylint.messages_control]
+disable = [
+    "C0111",  # missing-docstring
+    "C0103",  # invalid-name
+    "W0212",  # protected-access
+    "W0718",  # too-broad-exception
+    "W0511",  # fixme
+    # Add more rule codes or names here
+]
+
+[tool.pylint.format]
+max-line-length = 120
