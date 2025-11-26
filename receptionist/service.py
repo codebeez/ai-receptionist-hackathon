@@ -21,12 +21,12 @@ class ReceptionistService:
         self.openai_client = openai_client
         self.hotel_service = hotel_service
 
-        # Initialize an empty thread
-        self.thread = []
+        # Initialize an empty messages list
+        self.messages = []
 
     async def handle_message(self, message: str):
-        thread = self._get_thread()
-        thread.append(
+        messages = self._get_messages()
+        messages.append(
             {
                 "role": "user",
                 "content": message
@@ -36,11 +36,11 @@ class ReceptionistService:
         # Initial chat completion
         chat_completion = await self.openai_client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=thread,
+            messages=messages,
             tools=self._get_tools(),
             tool_choice="auto"
         )
-        thread.append(chat_completion.choices[0].message.model_dump())
+        messages.append(chat_completion.choices[0].message.model_dump())
 
         # While there are tool calls, execute them and get the result
         safety_counter = 0
@@ -53,7 +53,7 @@ class ReceptionistService:
                 tool_result = self._execute_tool(tool_name, tool_args)
 
                 # Add the tool result to the thread
-                thread.append({
+                messages.append({
                     "role": "tool",
                     "tool_call_id": tool_call.id,
                     "content": tool_result
@@ -62,18 +62,18 @@ class ReceptionistService:
             # Get the next chat completion with tool results
             chat_completion = await self.openai_client.chat.completions.create(
                 model="gpt-4o-mini",
-                messages=thread,
+                messages=messages,
                 tools=self._get_tools(),
                 tool_choice="auto"
             )
-            thread.append(chat_completion.choices[0].message.model_dump())
+            messages.append(chat_completion.choices[0].message.model_dump())
 
         # Return the final chat completion
         return chat_completion.choices[0].message.content
 
-    def _get_thread(self):
-        if len(self.thread) == 0:
-            self.thread.append(
+    def _get_messages(self):
+        if len(self.messages) == 0:
+            self.messages.append(
                 {
                     "role": "system",
                     "content": (
@@ -87,7 +87,7 @@ class ReceptionistService:
                 }
             )
 
-        return self.thread
+        return self.messages
 
     def _execute_tool(self, tool_name: str, tool_args: dict):
         try:
