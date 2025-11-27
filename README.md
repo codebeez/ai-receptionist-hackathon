@@ -23,9 +23,23 @@ All your code will go in the **`receptionist/`** folder. The hotel API and front
 
 ### Installation
 
+#### Install dependencies:
+
 ```bash
 uv sync
 ```
+
+#### Configure environment variables:
+
+Copy the example environment file
+
+```bash
+cp .env.example .env
+```
+
+Populate with an actual OpenAI API key. **The API key will be provided during the hackathon event.**
+
+> **Note:** The `.env` file contains sensitive information and should never be committed to version control. It's already included in `.gitignore`.
 
 ### Running the Application
 
