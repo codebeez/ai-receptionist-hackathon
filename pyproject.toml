@@ -9,6 +9,7 @@ dependencies = [
     "fastapi>=0.121.3",
     "openai>=2.8.1",
     "pydantic>=2.12.4",
+    "python-dateutil>=2.9.0.post0",
     "sqlalchemy>=2.0.0",
     "uvicorn[standard]>=0.30.0",
 ]
