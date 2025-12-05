@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Receptionist Chat</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"></script>
+    
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23667eea;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23764ba2;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23grad)'/%3E%3Cpath d='M50 25 L35 40 L65 40 Z' fill='%23fff'/%3E%3Cpath d='M30 40 L30 48 Q30 50 32 50 L68 50 Q70 50 70 48 L70 40 Z' fill='%23fff'/%3E%3Crect x='48' y='48' width='4' height='8' fill='%23fff' rx='1'/%3E%3Cpath d='M40 56 Q40 58 42 58 L58 58 Q60 58 60 56 L60 54 L40 54 Z' fill='%23fff'/%3E%3Ccircle cx='50' cy='64' r='3' fill='%23fbbf24'/%3E%3Ctext x='50' y='82' font-family='Arial' font-size='28' fill='%23fff' text-anchor='middle'%3EAI%3C/text%3E%3C/svg%3E">
     <style>
         * {
@@ -170,6 +173,104 @@
             color: white;
         }
 
+        /* --- MARKDOWN STYLES START --- */
+        .message-bubble p {
+            margin-bottom: 8px;
+        }
+        .message-bubble p:last-child {
+            margin-bottom: 0;
+        }
+        .message-bubble strong {
+            font-weight: 700;
+        }
+        .message-bubble em {
+            font-style: italic;
+        }
+        .message-bubble ul, .message-bubble ol {
+            margin-left: 20px;
+            margin-bottom: 8px;
+        }
+        .message-bubble li {
+            margin-bottom: 4px;
+        }
+        .message-bubble code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .message.user .message-bubble code {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .message-bubble pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 10px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 8px;
+        }
+        .message-bubble pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+        .message-bubble a {
+            color: #4f46e5;
+            text-decoration: underline;
+        }
+        .message.user .message-bubble a {
+            color: white;
+        }
+        /* --- MARKDOWN STYLES END --- */
+
+        /* Mute button controls */
+
+        .header-controls {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .mute-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .mute-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .mute-button svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Update connection-status to remove absolute positioning 
+        since it will now be inside header-controls */
+        .connection-status {
+            position: static; /* Changed from absolute */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
         .message-time {
             font-size: 11px;
             color: #94a3b8;
@@ -242,42 +343,6 @@
             cursor: not-allowed;
         }
 
-        .typing-indicator {
-            display: none;
-            padding: 12px 16px;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 18px;
-            width: fit-content;
-        }
-
-        .typing-indicator.active {
-            display: block;
-        }
-
-        .typing-indicator span {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #94a3b8;
-            margin: 0 2px;
-            animation: typing 1.4s infinite;
-        }
-
-        .typing-indicator span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-indicator span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes typing {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-10px); }
-        }
-
         @media (max-width: 768px) {
             .chat-container {
                 height: 100vh;
@@ -293,18 +358,28 @@
 </head>
 <body>
     <div class="chat-container">
-        <div class="chat-header">
-            <div class="connection-status">
-                <div class="status-indicator disconnected" id="statusIndicator"></div>
-                <span id="statusText">Connecting...</span>
-            </div>
-            <h1>🏨 AI Receptionist</h1>
-            <p>Ask me anything about your stay!</p>
+<div class="chat-header">
+    <div class="header-controls">
+        <button class="mute-button" id="muteButton" title="Toggle Mute">
+            <svg id="soundIcon" viewBox="0 0 24 24">
+                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+            </svg>
+            <svg id="muteIcon" viewBox="0 0 24 24" style="display: none;">
+                <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+            </svg>
+        </button>
+        
+        <div class="connection-status">
+            <div class="status-indicator disconnected" id="statusIndicator"></div>
+            <span id="statusText">Connecting...</span>
         </div>
-
+    </div>
+    
+    <h1>🏨 AI Receptionist</h1>
+    <p>Ask me anything about your stay!</p>
+</div>
         <div class="chat-messages" id="chatMessages">
-            <!-- Messages will be added here dynamically -->
-        </div>
+            </div>
 
         <div class="chat-input-container">
             <div class="chat-input-wrapper">
@@ -331,6 +406,19 @@
         const statusIndicator = document.getElementById('statusIndicator');
         const statusText = document.getElementById('statusText');
 
+        let isMuted = false;
+        let currentAudio = null; // Track current audio to stop it if needed
+        const muteButton = document.getElementById('muteButton');
+        const soundIcon = document.getElementById('soundIcon');
+        const muteIcon = document.getElementById('muteIcon');
+
+
+        // Configure Marked to treat line breaks as <br>
+        marked.use({
+            breaks: true,
+            gfm: true
+        });
+
         // Get WebSocket URL based on current location
         function getWebSocketURL() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -345,7 +433,7 @@
             return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
-        // Add message to chat
+        // Add message to chat with MARKDOWN Support
         function addMessage(type, message, timestamp) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}`;
@@ -359,7 +447,14 @@
             
             const bubble = document.createElement('div');
             bubble.className = 'message-bubble';
-            bubble.textContent = message;
+            
+            // --- MARKDOWN RENDERING LOGIC ---
+            // 1. Parse markdown to HTML
+            const rawHtml = marked.parse(message);
+            // 2. Sanitize HTML to prevent XSS attacks
+            const cleanHtml = DOMPurify.sanitize(rawHtml);
+            // 3. Set innerHTML
+            bubble.innerHTML = cleanHtml;
             
             const time = document.createElement('div');
             time.className = 'message-time';
@@ -404,6 +499,10 @@
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 addMessage(data.type, data.message, data.timestamp);
+
+                if (data.audio && data.type === 'bot') {
+                    playAudioResponse(data.audio);
+                }
             };
 
             ws.onerror = (error) => {
@@ -441,11 +540,55 @@
             messageInput.focus();
         }
 
+        function playAudioResponse(base64Audio) {
+            // 1. If muted, do nothing
+            if (isMuted) return;
+
+            try {
+                // 2. Stop any currently playing audio so they don't overlap
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                }
+
+                const audioSource = "data:audio/mp3;base64," + base64Audio;
+                currentAudio = new Audio(audioSource);
+                
+                // 3. Clean up variable when audio finishes naturally
+                currentAudio.onended = () => {
+                    currentAudio = null;
+                };
+
+                currentAudio.play().catch(e => {
+                    console.error("Audio autoplay blocked:", e);
+                });
+            } catch (error) {
+                console.error("Error decoding audio:", error);
+            }
+        }
+
         // Event listeners
         sendButton.addEventListener('click', sendMessage);
         messageInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 sendMessage();
+            }
+        });
+
+        muteButton.addEventListener('click', () => {
+            isMuted = !isMuted;
+            
+            if (isMuted) {
+                soundIcon.style.display = 'none';
+                muteIcon.style.display = 'block';
+                // If audio is currently speaking, shut it up immediately
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                }
+            } else {
+                soundIcon.style.display = 'block';
+                muteIcon.style.display = 'none';
             }
         });
 
